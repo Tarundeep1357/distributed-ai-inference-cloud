@@ -17,10 +17,10 @@ def train_model() -> None:
 
     model.fit(x,y)
 
-    model_dir= path("models")
-    models_dir.mkdir(exist_ok= True)
+    model_dir= Path("models")
+    model_dir.mkdir(exist_ok= True)
 
-    model_path= models_dir / "iris_model.joblib"
+    model_path= model_dir / "iris_model.joblib"
 
     joblib.dump(model , model_path)
 
