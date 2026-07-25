@@ -1,7 +1,21 @@
 from fastapi import FastAPI , HTTPException
 
 from app.model_service import ModelService
-from app.schemas import PredictionRequest, PredictionResponse
+
+from app.schemas import (PredictionRequest, 
+                         PredictionResponse, 
+                         JobSubmissionResponse, 
+                         JobStatusResponse)
+
+import json
+
+from uuid import uuid4
+
+from app.redis_client import (
+    INFERENCE_QUEUE,
+    get_job_key,
+    redis_client
+)
 
 app= FastAPI(title= "Destributed AI Inference Cloud",
             version= "0.1.0")
@@ -53,3 +67,4 @@ def predict(
             status_code=500,
             detail="Inference failed"
         ) from error
+
