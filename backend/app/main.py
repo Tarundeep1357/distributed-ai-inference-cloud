@@ -106,6 +106,28 @@ def submit_prediction_job(
     )
 
     return JobSubmissionResponse(
-        job_id=job_id,
+        job_id= job_id,
         status= "queued"
     )
+
+@app.get(
+    "/jobs/{job_id}",
+    response_model=JobStatusResponse
+)
+def get_job_status(
+    job_id: str
+) -> JobStatusResponse:
+
+    job_data = redis_client.get(
+        get_job_key(job_id)
+    )
+
+    if job_data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Job not found"
+        )
+
+    job = json.loads(job_data)
+
+    return JobStatusResponse(**job)

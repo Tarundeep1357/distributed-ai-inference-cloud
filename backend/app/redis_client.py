@@ -6,7 +6,7 @@ redis_client= redis.Redis(
     decode_responses= True
 )
 
-INFERENCE_QUEUE= "inference_job"
+INFERENCE_QUEUE= "inference_jobs"
 
 def get_job_key(job_id: str) -> str:
     return f"job:{job_id}"
