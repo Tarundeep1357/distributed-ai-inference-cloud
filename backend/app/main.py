@@ -68,3 +68,44 @@ def predict(
             detail="Inference failed"
         ) from error
 
+@app.post("/jobs/predict",
+          response_model= JobSubmissionResponse)
+
+def submit_prediction_job(
+    request: PredictionRequest) -> JobSubmissionResponse:
+    job_id= str(uuid4())
+
+    features = [
+        request.sepal_length,
+        request.sepal_width,
+        request.petal_length,
+        request.petal_width,
+    ]
+
+    job= {
+        "job_id": job_id,
+        "features": features,
+    }
+
+    job_status={
+        "job_id": job_id,
+        "status": "queued",
+        "prediction": None,
+        "error": None
+    }
+
+    redis_client.set(
+        get_job_key(job_id),
+        json.dumps(job_status),
+        ex= 3600
+    )
+
+    redis_client.lpush(
+        INFERENCE_QUEUE,
+        json.dumps(job)
+    )
+
+    return JobSubmissionResponse(
+        job_id=job_id,
+        status= "queued"
+    )
