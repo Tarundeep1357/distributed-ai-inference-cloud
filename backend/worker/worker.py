@@ -6,10 +6,14 @@ from app.redis_client import (INFERENCE_QUEUE,
                               get_job_key, 
                               redis_client)
 
+from uuid import uuid4
+
+worker_id = str(uuid4())[:8]
+
 model_service = ModelService()
 
 def process_jobs() -> None:
-    print("Interference worker started")
+    print(f"worker {worker_id} started")
     print("Waiting for the jobs...")
 
     while True:
@@ -28,7 +32,7 @@ def process_jobs() -> None:
         job_id= job["job_id"]
         features= job["features"]
 
-        print(f"Processing job: {job_id}")
+        print(f"worker: {worker_id} Processing job: {job_id}")
 
         try:
             redis_client.set(
