@@ -6,7 +6,7 @@ from app.redis_client import (INFERENCE_QUEUE,
                               get_job_key, 
                               redis_client)
 
-ModelService = ModelService()
+model_service = ModelService()
 
 def process_jobs() -> None:
     print("Interference worker started")
@@ -26,7 +26,7 @@ def process_jobs() -> None:
         job = json.loads(job_json)
 
         job_id= job["job_id"]
-        features= jon["features"]
+        features= job["features"]
 
         print(f"Processing job: {job_id}")
 
