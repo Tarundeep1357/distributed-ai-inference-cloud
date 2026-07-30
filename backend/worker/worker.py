@@ -1,16 +1,40 @@
-import json 
+import json
+import threading 
+import time 
 
 from app.model_service import ModelService
 
 from app.redis_client import (INFERENCE_QUEUE,
                               get_job_key, 
-                              redis_client)
+                              redis_client,
+                              get_worker_key)
 
 from uuid import uuid4
 
 worker_id = str(uuid4())[:8]
 
+HEARTBEAT_INTERVAL = 5
+WORKER_TTL = 15
+
+
 model_service = ModelService()
+
+def send_heartbeats() -> None:
+    while True:
+        worker_data={
+            "worker ID": worker_id,
+            "status": "alive",
+            "last_heartbeat": time.time()
+        }
+
+        redis_client.set(
+            get_worker_key(worker_id),
+            json.dumps(woerker_data),
+            ex= WORKER_TTL
+        )
+
+        time.sleep(HEARTBEAT_INTERVAL)
+
 
 def process_jobs() -> None:
     print(f"worker {worker_id} started")
@@ -82,5 +106,15 @@ def process_jobs() -> None:
             print(f"Job {job_id} failed: {error}")
 
 
+
+
+
 if __name__ == "__main__":
+    heartbeat_thread= threading.Thread(
+        target= send_heartbeats,
+        daemon= True
+    )
+
+    heartbeat_thread.start()
+
     process_jobs()
