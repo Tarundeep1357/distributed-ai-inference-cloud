@@ -21,17 +21,29 @@ model_service = ModelService()
 
 def send_heartbeats() -> None:
     while True:
-        worker_data={
-            "worker ID": worker_id,
-            "status": "alive",
-            "last_heartbeat": time.time()
-        }
 
-        redis_client.set(
-            get_worker_key(worker_id),
-            json.dumps(woerker_data),
-            ex= WORKER_TTL
-        )
+        try:
+            worker_data={
+                "worker_id": worker_id,
+                "status": "alive",
+                "last_heartbeat": time.time()
+            }
+
+            worker_key = get_worker_key(worker_id)
+
+            redis_client.set(
+                get_worker_key(worker_id),
+                json.dumps(worker_data),
+                ex= WORKER_TTL
+            )
+            
+            print(f"Heartbeat of worker sent: "
+                  f"worker= {worker_id},worker_key= {worker_key}")
+
+        except Exception as error:
+            print(f"Heartbeat failed for worker "
+                  f"{worker_id}: {error}"
+            )
 
         time.sleep(HEARTBEAT_INTERVAL)
 

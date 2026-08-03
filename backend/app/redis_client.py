@@ -13,4 +13,4 @@ def get_job_key(job_id: str) -> str:
     return f"job:{job_id}"
 
 def get_worker_key(worker_id: str) -> str:
-    return f"worker ID:{worker_id}"
+    return f"worker:{worker_id}"
