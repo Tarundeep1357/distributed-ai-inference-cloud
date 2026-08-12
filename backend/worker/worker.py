@@ -5,6 +5,7 @@ import time
 from app.model_service import ModelService
 
 from app.redis_client import (INFERENCE_QUEUE,
+                              PROCESSING_QUEUE,
                               get_job_key, 
                               redis_client,
                               get_worker_key)
@@ -53,15 +54,28 @@ def process_jobs() -> None:
     print("Waiting for the jobs...")
 
     while True:
-        queue_item= redis_client.brpop(
+        job_json= redis_client.blmove(
             INFERENCE_QUEUE,
-            timeout= 0
+            PROCESSING_QUEUE,
+            timeout= 0,
+            src= "RIGHT",
+            dest= "LEFT"
         )
 
-        if queue_item is None:
+        if job_json is None:
             continue
 
-        _, job_json = queue_item
+        print("AFTER BLMOVE")
+
+        print(
+            "Waiting queue:",
+            redis_client.llen(INFERENCE_QUEUE)
+        )
+        print(
+            "Processing queue:",
+            redis_client.llen(PROCESSING_QUEUE)
+        )
+
 
         job = json.loads(job_json)
 
@@ -84,6 +98,8 @@ def process_jobs() -> None:
 
             )
 
+            time.sleep(20) #temporary testing time.
+
             prediction= model_service.predict(features)
 
             redis_client.set(
@@ -101,6 +117,20 @@ def process_jobs() -> None:
                 f"Completed job: {job_id}\n"
                 f"Prediction: {prediction}"
 
+            )
+
+            print(
+                "Processing queue BEFORE LREM:",
+                redis_client.llen(PROCESSING_QUEUE)
+            )
+
+            redis_client.lrem(PROCESSING_QUEUE, #after processing is compeleted and done, remove the job from the processing queue. Or remove the job from the in-flight queue.
+                            1,
+                            job_json)
+
+            print(
+                "Processing queue AFTER LREM:",
+                redis_client.llen(PROCESSING_QUEUE)
             )
 
         except Exception as error:

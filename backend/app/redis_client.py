@@ -9,6 +9,8 @@ redis_client= redis.Redis(
 
 INFERENCE_QUEUE= "inference_jobs"
 
+PROCESSING_QUEUE= "inference_processing"
+
 def get_job_key(job_id: str) -> str:
     return f"job:{job_id}"
 

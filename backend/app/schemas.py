@@ -26,3 +26,13 @@ class JobStatusResponse(BaseModel):
 
     prediction: int | None = None
     error: str | None = None
+
+
+class WorkerInfo(BaseModel):
+    worker_id: str
+    status: Literal["alive"]
+    last_heartbeat: float
+
+class WorkerResponse(BaseModel):
+    count: int
+    workers: list[WorkerInfo]

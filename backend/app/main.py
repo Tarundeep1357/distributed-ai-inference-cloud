@@ -5,7 +5,8 @@ from app.model_service import ModelService
 from app.schemas import (PredictionRequest, 
                          PredictionResponse, 
                          JobSubmissionResponse, 
-                         JobStatusResponse)
+                         JobStatusResponse,
+                         WorkerResponse)
 
 import json
 
@@ -131,3 +132,23 @@ def get_job_status(
     job = json.loads(job_data)
 
     return JobStatusResponse(**job)
+
+@app.get(
+    "/workers", response_model= WorkerResponse)
+def get_active_workers() -> WorkerResponse:
+    Workers= []
+
+    for worker_key in redis_client.scan_iter("worker:*"): #scan_iter searches for keys matching the pattern "worker:*" in Redis, which represents active workers running.
+        worker_data= redis_client.get(worker_key)
+
+        if worker_data is None:
+            continue
+
+        worker= json.loads(worker_data)
+        workers.append(worker)
+
+    return WorkerResponse(
+        count= len(workers),
+        workers= workers
+
+    )
