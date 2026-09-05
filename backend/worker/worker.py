@@ -8,7 +8,8 @@ from app.redis_client import (INFERENCE_QUEUE,
                               PROCESSING_QUEUE,
                               get_job_key, 
                               redis_client,
-                              get_worker_key)
+                              get_worker_key,
+                              get_prpcessing_queue)
 
 from uuid import uuid4
 
@@ -17,6 +18,7 @@ worker_id = str(uuid4())[:8]
 HEARTBEAT_INTERVAL = 5
 WORKER_TTL = 15
 
+processing_queue = get_processing_queue(worker_id)
 
 model_service = ModelService()
 
@@ -52,11 +54,10 @@ def send_heartbeats() -> None:
 def process_jobs() -> None:
     print(f"worker {worker_id} started")
     print("Waiting for the jobs...")
-
     while True:
         job_json= redis_client.blmove(
             INFERENCE_QUEUE,
-            PROCESSING_QUEUE,
+            processing_queue,
             timeout= 0,
             src= "RIGHT",
             dest= "LEFT"
@@ -73,7 +74,7 @@ def process_jobs() -> None:
         )
         print(
             "Processing queue:",
-            redis_client.llen(PROCESSING_QUEUE)
+            redis_client.llen(processing_queue)
         )
 
 
@@ -98,8 +99,6 @@ def process_jobs() -> None:
 
             )
 
-            time.sleep(20) #temporary testing time.
-
             prediction= model_service.predict(features)
 
             redis_client.set(
@@ -121,16 +120,16 @@ def process_jobs() -> None:
 
             print(
                 "Processing queue BEFORE LREM:",
-                redis_client.llen(PROCESSING_QUEUE)
+                redis_client.llen(processing_queue)
             )
 
-            redis_client.lrem(PROCESSING_QUEUE, #after processing is compeleted and done, remove the job from the processing queue. Or remove the job from the in-flight queue.
+            redis_client.lrem(processing_queue, #after processing is compeleted and done, remove the job from the processing queue. Or remove the job from the in-flight queue.
                             1,
                             job_json)
 
             print(
                 "Processing queue AFTER LREM:",
-                redis_client.llen(PROCESSING_QUEUE)
+                redis_client.llen(processing_queue)
             )
 
         except Exception as error:

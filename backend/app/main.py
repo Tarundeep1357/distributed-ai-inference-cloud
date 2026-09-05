@@ -86,6 +86,7 @@ def submit_prediction_job(
     job= {
         "job_id": job_id,
         "features": features,
+        "retry_count": 0
     }
 
     job_status={
