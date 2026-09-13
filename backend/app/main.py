@@ -15,7 +15,8 @@ from uuid import uuid4
 from app.redis_client import (
     INFERENCE_QUEUE,
     get_job_key,
-    redis_client
+    redis_client,
+    get_processing_queue
 )
 
 app= FastAPI(title= "Destributed AI Inference Cloud",
@@ -137,7 +138,7 @@ def get_job_status(
 @app.get(
     "/workers", response_model= WorkerResponse)
 def get_active_workers() -> WorkerResponse:
-    Workers= []
+    workers= []
 
     for worker_key in redis_client.scan_iter("worker:*"): #scan_iter searches for keys matching the pattern "worker:*" in Redis, which represents active workers running.
         worker_data= redis_client.get(worker_key)

@@ -9,7 +9,7 @@ from app.redis_client import (INFERENCE_QUEUE,
                               get_job_key, 
                               redis_client,
                               get_worker_key,
-                              get_prpcessing_queue)
+                              get_processing_queue)
 
 from uuid import uuid4
 

@@ -19,6 +19,6 @@ def get_job_key(job_id: str) -> str:
 def get_worker_key(worker_id: str) -> str:
     return f"worker:{worker_id}"
 
-def get_processing_queue(worker_idz: str) -> str:
-    return f"{PROCESSING_QUEUE_PREFIX}: {worker_id}"
+def get_processing_queue(worker_id: str) -> str:
+    return f"{PROCESSING_QUEUE_PREFIX}:{worker_id}"
 
