@@ -118,19 +118,30 @@ def process_jobs() -> None:
 
             )
 
-            print(
-                "Processing queue BEFORE LREM:",
-                redis_client.llen(processing_queue)
-            )
+            try:
+                print(
+                    "Processing queue BEFORE LREM:",
+                    redis_client.llen(processing_queue)
+                )
 
-            redis_client.lrem(processing_queue, #after processing is compeleted and done, remove the job from the processing queue. Or remove the job from the in-flight queue.
-                            1,
-                            job_json)
+                removed = redis_client.lrem(
+                    processing_queue,
+                    1,
+                    job_json
+                )
 
-            print(
-                "Processing queue AFTER LREM:",
-                redis_client.llen(processing_queue)
-            )
+                print(
+                    "Processing queue AFTER LREM:",
+                    redis_client.llen(processing_queue)
+                )
+
+                if removed != 1:
+                    print(f"Warning: Job {job_id} was not removed")
+
+            except Exception as cleanup_error:
+                print(
+                    f"Cleanup failed for job {job_id}: {cleanup_error}"
+                )
 
         except Exception as error:
             redis_client.set(

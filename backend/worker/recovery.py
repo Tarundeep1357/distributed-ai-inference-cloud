@@ -1,7 +1,7 @@
 import json 
 import time 
 
-from backend.app.redis_client import (
+from app.redis_client import (
     redis_client,
     INFERENCE_QUEUE,
     PROCESSING_QUEUE_PREFIX,
@@ -65,7 +65,7 @@ def recovery_loop():
 
     while True:
 
-        processing_queues= get_processing_qeueue()
+        processing_queues= get_processing_queue()
 
         for queue in processing_queues:
             recover_dead_workers(queue)
