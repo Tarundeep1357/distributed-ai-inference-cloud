@@ -97,16 +97,18 @@ def submit_prediction_job(
         "error": None
     }
 
-    redis_client.set(
-        get_job_key(job_id),
-        json.dumps(job_status),
-        ex= 3600
-    )
+    with redis_client.pipeline(transaction=True) as pipe:
+        pipe.set(
+            get_job_key(job_id),
+            json.dumps(job_status),
+        )
 
-    redis_client.lpush(
-        INFERENCE_QUEUE,
-        json.dumps(job)
-    )
+        pipe.lpush(
+            INFERENCE_QUEUE,
+            json.dumps(job)
+        )
+
+        pipe.execute()
 
     return JobSubmissionResponse(
         job_id= job_id,
